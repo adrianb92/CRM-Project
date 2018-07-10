@@ -7,8 +7,6 @@ import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.adrianbarczuk.springdemo.entity.Customer;
 
 @Repository
@@ -65,5 +63,26 @@ public class CustomerDAOImpl implements CustomerDAO {
 		Customer customer = session.get(Customer.class, id);
 		
 		session.delete(customer);
+	}
+
+	@Override
+	public List<Customer> searchCustomers(String searchName) {
+		
+		//get hibernate session
+		Session session = sessionFactory.getCurrentSession();
+		
+		Query<Customer> query;
+		
+		//search customers by name
+		if(searchName!=null && searchName.trim().length()>0) {
+			query = session.createQuery("from Customer where lower(firstName) like :name or lower(lastName) like :name", Customer.class);
+			query.setParameter("name", "%" + searchName.toLowerCase() + "%");
+		} else {
+			query = session.createQuery("from Customer", Customer.class);
+		}
+		
+		//get results and return them
+		List<Customer> customers = query.getResultList();
+		return customers;
 	}
 }
